@@ -1,0 +1,59 @@
+syntax = "proto3";
+
+package proto;
+
+// option go_package="包的路径;包别名"
+// 定义option go_package 会覆盖 package proto;
+// 有别名的话，会使用别名作为proto文件生成go文件的包名称
+//option go_package="proto";
+
+
+// 为service 添加 restful
+// option (google.api.http)
+import "google/api/annotations.proto";
+
+// 引入 timestamp、any、empty类型
+import "google/protobuf/timestamp.proto";
+import "google/protobuf/any.proto";
+import "google/protobuf/empty.proto";
+
+
+message ProdRequest {
+    int32 prod_id = 1;
+}
+
+message ProdResponse {
+    int32 prod_stock =1;
+}
+
+// 定义服务
+service ProdService {
+    rpc GetProdStock(ProdRequest) returns (ProdResponse) {
+        // 定义grpc接口对应的restful接口
+        option (google.api.http) = {
+            get : "/v1/prod/{prod_id}",
+        };
+    }
+}
+
+message OrderRequest {
+    int64 order_id=1;
+}
+
+message OrderResponse {
+    int64 order_id=1;
+    string name=2;
+    map<string, string> m=4;
+    google.protobuf.Timestamp time=3;
+    google.protobuf.Any any=5;
+    google.protobuf.Empty empty=6;
+}
+
+// 定义服务
+service Order {
+    rpc GetOrder(OrderRequest) returns(OrderResponse) {
+        option (google.api.http) = {
+            get: "/order/{order_id}",
+        };
+    }
+}
