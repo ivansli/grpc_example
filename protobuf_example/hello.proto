@@ -1,0 +1,97 @@
+syntax = "proto3";
+
+package hello;
+
+// 定义生成的 hello.pb.go 文件信息
+// github.com/ivansli/rpc_gateway/protobuf_example 为路径
+// hello 为别名，可以与上面 (package hello;) 不同，不同时使用当前别名
+//option go_package="github.com/ivansli/rpc_gateway/protobuf_example;hello";
+
+option go_package="./protobuf_example;hello";
+
+
+// 为service 添加 restful
+// option (google.api.http)
+import "google/api/annotations.proto";
+
+// 自定义option使用
+import "google/protobuf/descriptor.proto";
+
+
+//可扩展的类型有：
+// FileOptions
+// MessageOptions
+// FieldOptions
+// OneofOptions
+// EnumOptions
+// EnumValueOptions
+// ServiceOptions
+// MethodOptions
+//UninterpretedOption
+
+
+// 添加对 file 的扩展
+extend google.protobuf.FileOptions {
+    string author = 1000;
+}
+
+// 对消息 message 的扩展
+extend google.protobuf.MessageOptions {
+    string which_msg = 1000;
+}
+
+// 添加对 filed 的扩展字段
+extend google.protobuf.FieldOptions {
+    string default_string = 51000;
+    int32 default_int = 51001;
+}
+
+// 对service 的扩展
+extend google.protobuf.ServiceOptions {
+    string service_version = 1000;
+}
+
+// 对 service 的扩展
+extend google.protobuf.MethodOptions {
+    string method_version = 1000;
+}
+
+
+// 使用file扩展字段
+option (author)="ivansli";
+
+
+// 定义 message 消息结构，对用go语言struct
+message HelloRequest{
+    // message 扩展字段
+    option (which_msg) = "this is hello request";
+
+    string name=1 [(default_string)="ivans"];
+    int32 age=2 [(default_int)=18];
+}
+
+// 定义 message 消息结构，对用go语言struct
+message HelloResponse{
+    // message 扩展字段
+    option (which_msg) = "it is hello response";
+
+    string address=1 [(default_string)="Asia/Shanghai"];
+    int32 money=2   [(default_int)=1000000];
+}
+
+
+// rpc服务
+service SayHello{
+    option (service_version) = "v0.0.1";
+
+    // rpc对应服务方法
+    rpc SayHello(HelloRequest) returns(HelloResponse) {
+        // 添加restful对应接口信息
+        option (google.api.http) = {
+            get: "/v1/say_hello/{name}" // {name} 对应 HelloRequest 中 name
+        };
+
+        // 自定义的扩展字段
+        option (method_version) = "v0.0.1";
+    };
+}

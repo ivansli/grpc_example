@@ -17,6 +17,19 @@ import "google/protobuf/timestamp.proto";
 import "google/protobuf/any.proto";
 import "google/protobuf/empty.proto";
 
+// 自定义option使用
+import "google/protobuf/descriptor.proto";
+
+extend google.protobuf.FieldOptions {
+    string default_string = 50000;
+    int64 default_int = 50001;
+}
+
+message Error {
+    int64 code=1 [(default_int) = 10];
+    string reason=2 [(default_string) = "gopher"];
+    google.protobuf.Any detail=3;
+}
 
 message ProdRequest {
     int32 prod_id = 1;

@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/golang/protobuf/descriptor"
+	"github.com/golang/protobuf/proto"
 	pb "github.com/ivansli/rpc_gateway/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/status"
 	"math/rand"
 	"time"
 )
@@ -15,8 +18,55 @@ type MyData struct {
 	Age  int
 }
 
+
+func getFileOptions() {
+	e := &pb.Error{}
+	// 文件描述信息, message描述信息
+	fileDEsc, messageDesc := descriptor.MessageDescriptorProto(e)
+
+	fmt.Println(fileDEsc.GetName()) // proto 文件名
+	fmt.Println(fileDEsc.GetPackage()) // 包名称
+	fmt.Println(fileDEsc.GetSyntax()) // 语法协议
+	fmt.Println(fileDEsc.GetService()) // 服务
+	fmt.Println(fileDEsc.GetDependency()) // 依赖的包
+	fmt.Println(fileDEsc.GetExtension()) // extension 扩展信息
+
+	// 遍历message中每一个字段
+	// field（*FieldDescriptorProto） 字段信息
+	for _, field := range messageDesc.Field {
+		fmt.Println(*field.Name, "--",field.GetDefaultValue())
+
+		// *(field.Name) 字段名
+		if *(field.Name) == "code" {
+			// 字段信息中的 option 信息
+			if v, err := proto.GetExtension(field.Options, pb.E_DefaultInt); err == nil {
+				// 存在 option 信息，则获取对应值
+				// 注意先进行断言，在获取值
+				fmt.Printf("default:%v\n", *(v.(*int64)))
+			}
+		}
+
+		if *(field.Name) == "reason" {
+			if v, err := proto.GetExtension(field.Options, pb.E_DefaultString); err == nil {
+				fmt.Printf("default:%v\n", *(v.(*string)))
+			}
+		}
+	}
+
+	// 直接获取对应某个字段的 option 信息
+	if v, err := proto.GetExtension(messageDesc.Field[0].Options, pb.E_DefaultInt); err == nil {
+		fmt.Printf("GetExtensions(usmf.Options, test.E_FileOpt1) file_opt1:%d", *(v.(*int64)))
+	} else {
+		fmt.Printf("GetExtensions(usmf.Options, test.E_FileOpt1) failed: %v", err)
+	}
+}
+
+
+
 // grpc客户端
 func main() {
+	//getFileOptions()
+	//return
 	// context对象
 	ctx, _ := context.WithTimeout(context.Background(), 1*time.Second)
 	// 简历连接
@@ -44,7 +94,10 @@ func main() {
 		OrderId: r.Int63(),
 	})
 
-	fmt.Println(re2)
+	s, ok := status.FromError(err)
+	fmt.Println(s.Code(), s.Message(), s.Details(), ok)
+
+	fmt.Printf("%#v", err)
 
 	var m MyData
 	if err == nil {

@@ -8,6 +8,8 @@ import (
 	"github.com/golang/protobuf/ptypes/empty"
 	pb "github.com/ivansli/rpc_gateway/proto"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
 	"log"
 	"net"
@@ -47,7 +49,6 @@ type MyData struct {
 // 实现pb中定义的 GetOrder 服务
 func (o *Order) GetOrder(ctx context.Context, in *pb.OrderRequest) (*pb.OrderResponse, error) {
 	fmt.Println(in.OrderId)
-
 	// 加入睡眠时间，模拟超时
 	// 客户端通过ctx设置超时时间为1秒
 	//time.Sleep(2 *time.Second)
@@ -60,6 +61,13 @@ func (o *Order) GetOrder(ctx context.Context, in *pb.OrderRequest) (*pb.OrderRes
 	//
 	// 2. 先将准备传递的结构使用json.Marshal变成字节切片，然后赋值给Value字段
 	//
+	e := &pb.Error{
+		Code:   int64(codes.Unavailable),
+		Reason: "error happend",
+	}
+
+	s, _ := status.New(codes.Unavailable, "error happend").WithDetails(e)
+	return nil, s.Err()
 
 	m := MyData{Name: "ivansli", Age: 35}
 	b, _ := json.Marshal(m)
