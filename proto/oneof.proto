@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package proto;
+
+message M1 {
+    int64 m = 1;
+}
+
+message M2 {
+    string m = 1;
+}
+
+// 定义 oneof 类型
+message Params {
+    // 注意：位置标识
+    oneof Param {
+        M1 m1 = 1;
+        M2 m2 = 2;
+        int64 m3 = 3;
+    }
+    string p1 = 4;
+}
+
+// 定义 oneof 类型
+message Params1 {
+    // 注意：位置标识
+    string p1 = 1;
+    oneof Param {
+        M1 m1 = 2;
+        M2 m2 = 3;
+        int64 m3 = 4;
+    }
+}
